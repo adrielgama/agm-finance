@@ -1,0 +1,26 @@
+import "server-only";
+import { betterAuth } from "better-auth";
+import { firestoreAdapter, initFirestore } from "better-auth-firestore";
+import { cert } from "firebase-admin/app";
+
+const firestore = initFirestore({
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+  }),
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  name: "better-auth",
+});
+
+export const auth = betterAuth({
+  database: firestoreAdapter({ firestore }),
+  baseURL: process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET,
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
+});

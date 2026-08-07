@@ -1,26 +1,115 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-montserrat);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-montserrat);
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  AGM Digital — tema único (dark only, sem alternância de tema).
+  :root e .dark carregam a mesma paleta de propósito: o <html> sempre
+  recebe a classe "dark" (ver layout.tsx), mas manter os dois blocos
+  idênticos evita qualquer flash de tema claro do shadcn/tw-animate-css.
+*/
+:root,
+.dark {
+  --background: #0a0e1e;
+  --foreground: #e7eaf6;
+  --card: #10152b;
+  --card-foreground: #e7eaf6;
+  --popover: #10152b;
+  --popover-foreground: #e7eaf6;
+  --primary: #3d63f5;
+  --primary-foreground: #f5f7ff;
+  --secondary: #1a2040;
+  --secondary-foreground: #e7eaf6;
+  --muted: #161b36;
+  --muted-foreground: #8891b3;
+  --accent: #1e2648;
+  --accent-foreground: #e7eaf6;
+  --destructive: #f2545b;
+  --border: color-mix(in oklab, white 8%, transparent);
+  --input: #1a2040;
+  --ring: #3d63f5;
+  --positive: #22c55e;
+  --positive-foreground: #f5f7ff;
+  --negative: #f2545b;
+  --negative-foreground: #f5f7ff;
+  --chart-1: #3d63f5;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #f2545b;
+  --radius: 0.75rem;
+  --sidebar: #0b0f22;
+  --sidebar-foreground: #c7cee8;
+  --sidebar-primary: #3d63f5;
+  --sidebar-primary-foreground: #f5f7ff;
+  --sidebar-accent: #161b36;
+  --sidebar-accent-foreground: #e7eaf6;
+  --sidebar-border: color-mix(in oklab, white 6%, transparent);
+  --sidebar-ring: #3d63f5;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: dark;
+  }
 }
