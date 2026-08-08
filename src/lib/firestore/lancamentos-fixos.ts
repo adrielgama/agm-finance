@@ -17,7 +17,13 @@ function lancamentosRef() {
 export async function listLancamentosFixos(): Promise<LancamentoFixo[]> {
   await verifySession();
   const snapshot = await lancamentosRef().orderBy("nome", "asc").get();
-  return snapshot.docs.map((doc) => doc.data());
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      ...data,
+      valorCaixaCentavos: data.valorCaixaCentavos ?? null,
+    };
+  });
 }
 
 export async function createLancamentoFixo(input: LancamentoFixoInput) {

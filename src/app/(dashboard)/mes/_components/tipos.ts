@@ -3,9 +3,10 @@ export type ItemControle = {
   tipo: "despesa" | "receita";
   nome: string;
   categoria: string;
-  dia: number;
+  data: Date;
   valorCentavos: number;
   pago: boolean;
-  onToggle: () => void;
+  onConfirm: (data: Date, valorCentavos: number) => void;
+  onUnconfirm: () => void;
   isToggling: boolean;
 };

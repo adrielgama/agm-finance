@@ -1,4 +1,7 @@
-import type { LancamentoFixo } from "@/types/lancamento-fixo";
+import {
+  valorCaixaLancamentoFixo,
+  type LancamentoFixo,
+} from "@/types/lancamento-fixo";
 import type { NotaFiscal } from "@/types/nota-fiscal";
 import type { Transacao } from "@/types/transacao";
 
@@ -35,7 +38,7 @@ export function calcularEventosFluxo({
       dia: Math.min(lancamento.diaVencimento, totalDiasNoMes),
       tipo: lancamento.tipo,
       nome: lancamento.nome,
-      valorCentavos: lancamento.valorCentavos,
+      valorCentavos: valorCaixaLancamentoFixo(lancamento),
       origem: "fixo",
     });
   }

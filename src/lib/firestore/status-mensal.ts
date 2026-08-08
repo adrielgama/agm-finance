@@ -8,6 +8,7 @@ import {
 import { getAdminDb } from "@/lib/firebase/admin";
 import { verifySession } from "@/lib/auth/dal";
 import type { StatusMensalLancamento } from "@/types/status-mensal";
+import { z } from "zod";
 
 const COLLECTION = "statusMensalLancamentos";
 
@@ -25,6 +26,7 @@ function mapDoc(doc: QueryDocumentSnapshot): StatusMensalLancamento {
     dataPagamento: data.dataPagamento
       ? (data.dataPagamento as Timestamp).toDate()
       : null,
+    valorRealCentavos: data.valorRealCentavos ?? null,
     updatedAt: (data.updatedAt as Timestamp | undefined)?.toDate() ?? new Date(),
   };
 }
@@ -41,20 +43,37 @@ export async function listStatusMensal(): Promise<StatusMensalLancamento[]> {
   return snapshot.docs.map(mapDoc);
 }
 
-export async function setStatusMensalLancamento(
-  lancamentoFixoId: string,
-  mes: string,
-  pago: boolean
-) {
+const statusInputSchema = z.object({
+  lancamentoFixoId: z.string().min(1),
+  mes: z.string().regex(/^\d{4}-\d{2}$/),
+  pago: z.boolean(),
+  dataPagamento: z.date().nullable().optional(),
+  valorRealCentavos: z.number().int().nonnegative().nullable().optional(),
+});
+
+export async function setStatusMensalLancamento(input: {
+  lancamentoFixoId: string;
+  mes: string;
+  pago: boolean;
+  dataPagamento?: Date | null;
+  valorRealCentavos?: number | null;
+}) {
   await verifySession();
+  const parsed = statusInputSchema.parse(input);
   await getAdminDb()
     .collection(COLLECTION)
-    .doc(docId(lancamentoFixoId, mes))
+    .doc(docId(parsed.lancamentoFixoId, parsed.mes))
     .set({
-      lancamentoFixoId,
-      mes,
-      pago,
-      dataPagamento: pago ? FieldValue.serverTimestamp() : null,
+      lancamentoFixoId: parsed.lancamentoFixoId,
+      mes: parsed.mes,
+      pago: parsed.pago,
+      dataPagamento:
+        parsed.pago && parsed.dataPagamento
+          ? Timestamp.fromDate(parsed.dataPagamento)
+          : null,
+      valorRealCentavos: parsed.pago
+        ? (parsed.valorRealCentavos ?? null)
+        : null,
       updatedAt: FieldValue.serverTimestamp(),
     });
 }

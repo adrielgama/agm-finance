@@ -24,7 +24,7 @@ function mapDoc(doc: QueryDocumentSnapshot): Transacao {
     categoria: data.categoria,
     valorCentavos: data.valorCentavos,
     data: toDate(data.data),
-    pago: data.pago ?? true,
+    pago: data.pago ?? false,
     responsavelId: data.responsavelId ?? null,
     observacao: data.observacao ?? null,
     createdAt: toDate(data.createdAt),

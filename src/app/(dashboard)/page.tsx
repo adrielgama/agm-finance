@@ -14,7 +14,10 @@ import { useStatusMensal } from "@/hooks/use-status-mensal";
 import { useTransacoes } from "@/hooks/use-transacoes";
 import { formatCentavos } from "@/lib/format";
 import { calcularSaldoAtual } from "@/lib/saldo";
-import { CATEGORIA_LABEL } from "@/types/lancamento-fixo";
+import {
+  CATEGORIA_LABEL,
+  valorCaixaLancamentoFixo,
+} from "@/types/lancamento-fixo";
 import { FluxoMesCard } from "./_components/fluxo-mes-card";
 import { SaldoAtualCard } from "./_components/saldo-atual-card";
 import { StatCard } from "./_components/stat-card";
@@ -38,8 +41,14 @@ export default function DashboardPage() {
     (l) => l.tipo === "receita" && l.ativo
   );
 
-  const totalDespesas = despesasAtivas.reduce((sum, l) => sum + l.valorCentavos, 0);
-  const totalReceitas = receitasAtivas.reduce((sum, l) => sum + l.valorCentavos, 0);
+  const totalDespesas = despesasAtivas.reduce(
+    (sum, lancamento) => sum + valorCaixaLancamentoFixo(lancamento),
+    0
+  );
+  const totalReceitas = receitasAtivas.reduce(
+    (sum, lancamento) => sum + valorCaixaLancamentoFixo(lancamento),
+    0
+  );
   const saldoProjetado = totalReceitas - totalDespesas;
 
   const isLoadingSaldoAtual =
@@ -63,7 +72,8 @@ export default function DashboardPage() {
 
   const despesasPorCategoria = despesasAtivas.reduce<Record<string, number>>(
     (acc, l) => {
-      acc[l.categoria] = (acc[l.categoria] ?? 0) + l.valorCentavos;
+      acc[l.categoria] =
+        (acc[l.categoria] ?? 0) + valorCaixaLancamentoFixo(l);
       return acc;
     },
     {}

@@ -34,12 +34,16 @@ export function SaldoAtualCard({
   const [open, setOpen] = useState(false);
   const [valorCentavos, setValorCentavos] = useState(0);
   const [data, setData] = useState<Date | undefined>(new Date());
+  const [margemSegurancaCentavos, setMargemSegurancaCentavos] = useState(100_000);
   const updateSaldoInicial = useUpdateSaldoInicial();
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       setValorCentavos(configuracao?.saldoInicialCentavos ?? 0);
       setData(configuracao?.saldoInicialData ?? new Date());
+      setMargemSegurancaCentavos(
+        configuracao?.margemSegurancaCentavos ?? 100_000
+      );
     }
     setOpen(nextOpen);
   }
@@ -49,7 +53,11 @@ export function SaldoAtualCard({
     if (!data) return;
 
     updateSaldoInicial
-      .mutateAsync({ saldoInicialCentavos: valorCentavos, saldoInicialData: data })
+      .mutateAsync({
+        saldoInicialCentavos: valorCentavos,
+        saldoInicialData: data,
+        margemSegurancaCentavos,
+      })
       .then(() => setOpen(false));
   }
 
@@ -109,6 +117,19 @@ export function SaldoAtualCard({
                       value={data}
                       onValueChange={setData}
                     />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="margem-seguranca">
+                      Margem de segurança (R$)
+                    </Label>
+                    <CurrencyInput
+                      id="margem-seguranca"
+                      defaultValueCentavos={margemSegurancaCentavos}
+                      onValueChange={setMargemSegurancaCentavos}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Valor adicional preservado além das obrigações previstas.
+                    </span>
                   </div>
                 </div>
 

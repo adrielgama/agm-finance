@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -14,6 +13,7 @@ import {
 import { formatCentavos } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ItemControle } from "./tipos";
+import { ConfirmarMovimentoDialog } from "./confirmar-movimento-dialog";
 
 export function ControleSecaoSkeleton() {
   return (
@@ -55,7 +55,7 @@ export function ControleSecao({
             <span
               className={cn(
                 "text-lg font-semibold tabular-nums",
-                tone === "positive" ? "text-positive" : "text-negative"
+                tone === "positive" ? "text-positive" : "text-negative",
               )}
             >
               {formatCentavos(totalConfirmado)}
@@ -74,38 +74,36 @@ export function ControleSecao({
             {emptyLabel}
           </p>
         ) : (
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-10"></TableHead>
-                <TableHead className="w-10">Dia</TableHead>
+                <TableHead className="w-16">Status</TableHead>
+                <TableHead className="w-14">Dia</TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="hidden w-48 md:table-cell">
+                  Categoria
+                </TableHead>
+                <TableHead className="w-28 text-right sm:w-36">Valor</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {itens.map((item) => (
                 <TableRow key={item.key}>
                   <TableCell>
-                    <Switch
-                      checked={item.pago}
-                      disabled={item.isToggling}
-                      onCheckedChange={item.onToggle}
-                    />
+                    <ConfirmarMovimentoDialog item={item} />
                   </TableCell>
                   <TableCell className="text-muted-foreground tabular-nums">
-                    {String(item.dia).padStart(2, "0")}
+                    {String(item.data.getUTCDate()).padStart(2, "0")}
                   </TableCell>
                   <TableCell
                     className={cn(
-                      "font-medium",
-                      !item.pago && "text-muted-foreground"
+                      "whitespace-normal font-medium",
+                      !item.pago && "text-muted-foreground",
                     )}
                   >
                     {item.nome}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="hidden text-muted-foreground md:table-cell">
                     {item.categoria}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">

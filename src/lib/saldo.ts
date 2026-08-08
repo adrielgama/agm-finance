@@ -1,5 +1,8 @@
 import { diasNoMes } from "@/lib/fluxo-mensal";
-import type { LancamentoFixo } from "@/types/lancamento-fixo";
+import {
+  valorCaixaLancamentoFixo,
+  type LancamentoFixo,
+} from "@/types/lancamento-fixo";
 import type { NotaFiscal } from "@/types/nota-fiscal";
 import type { StatusMensalLancamento } from "@/types/status-mensal";
 import type { Transacao } from "@/types/transacao";
@@ -31,28 +34,23 @@ export function dataOcorrenciaLancamentoFixo(
 
 /**
  * Status pago/recebido de uma ocorrência mensal de lançamento fixo. Sem
- * override manual, infere pela data: vencimento no passado é presumido pago
- * (evita ter que marcar retroativamente todo histórico); hoje/futuro fica
- * pendente até confirmação.
+ * confirmação manual, a ocorrência continua pendente. O vencimento sozinho
+ * nunca movimenta o saldo real.
  */
 export function statusEfetivoLancamentoFixo({
   lancamentoFixoId,
   mes,
-  dataOcorrencia,
   overrides,
-  hoje,
 }: {
   lancamentoFixoId: string;
   mes: string;
-  dataOcorrencia: Date;
   overrides: StatusMensalLancamento[];
-  hoje: Date;
 }): boolean {
   const override = overrides.find(
     (o) => o.lancamentoFixoId === lancamentoFixoId && o.mes === mes
   );
   if (override) return override.pago;
-  return inicioDoDia(dataOcorrencia) < inicioDoDia(hoje);
+  return false;
 }
 
 type CalcularSaldoParams = {
@@ -64,7 +62,7 @@ type CalcularSaldoParams = {
   statusOverrides: StatusMensalLancamento[];
   /** Só eventos até este dia (inclusive) entram na soma. */
   ateInclusive: Date;
-  /** "Agora" real, usado só pra inferir status default de ocorrências sem override. */
+  /** "Agora" real, usado como limite do saldo atual. */
   hoje: Date;
 };
 
@@ -76,7 +74,6 @@ function calcularSaldo({
   notasFiscais,
   statusOverrides,
   ateInclusive,
-  hoje,
 }: CalcularSaldoParams): number {
   const inicioExclusivo = inicioDoDia(saldoInicialData);
   const fimInclusivo = inicioDoDia(ateInclusive);
@@ -113,21 +110,28 @@ function calcularSaldo({
       const mes = mesChave(cursor);
       for (const lancamento of lancamentosAtivos) {
         const dataOcorrencia = dataOcorrenciaLancamentoFixo(lancamento, mes);
-        if (!dentroDoIntervalo(dataOcorrencia)) continue;
 
+        const override = statusOverrides.find(
+          (item) =>
+            item.lancamentoFixoId === lancamento.id && item.mes === mes
+        );
         const pago = statusEfetivoLancamentoFixo({
           lancamentoFixoId: lancamento.id,
           mes,
-          dataOcorrencia,
           overrides: statusOverrides,
-          hoje,
         });
         if (!pago) continue;
 
+        const dataEfetiva = override?.dataPagamento ?? dataOcorrencia;
+        if (!dentroDoIntervalo(dataEfetiva)) continue;
+
+        const valorCentavos =
+          override?.valorRealCentavos ?? valorCaixaLancamentoFixo(lancamento);
+
         saldo +=
           lancamento.tipo === "receita"
-            ? lancamento.valorCentavos
-            : -lancamento.valorCentavos;
+            ? valorCentavos
+            : -valorCentavos;
       }
     }
   }

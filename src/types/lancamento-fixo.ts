@@ -8,6 +8,7 @@ export const CATEGORIAS_DESPESA = [
   "ferramentas",
   "infraestrutura",
   "impostos",
+  "distribuicao_lucros",
   "outros",
 ] as const;
 
@@ -28,6 +29,7 @@ export const CATEGORIA_LABEL: Record<CategoriaDespesa | CategoriaReceita, string
   ferramentas: "Ferramentas",
   infraestrutura: "Infraestrutura",
   impostos: "Impostos",
+  distribuicao_lucros: "Distribuição de lucros",
   prestacao_servico: "Prestação de serviço",
   aporte_socio: "Aporte de sócio",
   outros: "Outros",
@@ -39,6 +41,8 @@ export type LancamentoFixo = {
   nome: string;
   categoria: CategoriaDespesa | CategoriaReceita;
   valorCentavos: number;
+  /** Impacto previsto no banco quando for diferente do valor bruto. */
+  valorCaixaCentavos: number | null;
   diaVencimento: number;
   responsavelId: string | null;
   ativo: boolean;
@@ -51,3 +55,9 @@ export type LancamentoFixoInput = Omit<
   LancamentoFixo,
   "id" | "createdAt" | "updatedAt"
 >;
+
+export function valorCaixaLancamentoFixo(
+  lancamento: Pick<LancamentoFixo, "valorCentavos" | "valorCaixaCentavos">
+) {
+  return lancamento.valorCaixaCentavos ?? lancamento.valorCentavos;
+}

@@ -20,6 +20,7 @@ export async function getConfiguracao(): Promise<ConfiguracaoGeral | null> {
   return {
     saldoInicialCentavos: data.saldoInicialCentavos,
     saldoInicialData: (data.saldoInicialData as Timestamp).toDate(),
+    margemSegurancaCentavos: data.margemSegurancaCentavos ?? 100_000,
     updatedAt: (data.updatedAt as Timestamp | undefined)?.toDate() ?? new Date(),
   };
 }
@@ -32,6 +33,7 @@ export async function updateSaldoInicial(input: ConfiguracaoGeralInput) {
     .set({
       saldoInicialCentavos: input.saldoInicialCentavos,
       saldoInicialData: Timestamp.fromDate(input.saldoInicialData),
+      margemSegurancaCentavos: input.margemSegurancaCentavos,
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    }, { merge: true });
 }

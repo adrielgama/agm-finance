@@ -23,8 +23,9 @@ fixas, receitas fixas, notas fiscais e projeção de lucro/pró-labore. Deploy s
 - **Dark mode único** — não existe toggle nem tema claro. Não adicione `next-themes` nem lógica
   de alternância; é trabalho desperdiçado.
 
-Comandos: `pnpm dev`, `pnpm build`, `pnpm lint`. Sempre rode `pnpm lint` e, para mudanças maiores,
-`pnpm build` antes de considerar uma tarefa concluída — o build já pega erros de tipo.
+Comandos: `bun run dev`, `bun test`, `bun run build`, `bun run lint`. Sempre rode `bun test` e
+`bun run lint` e, para mudanças maiores, `bun run build` antes de considerar uma tarefa concluída
+— o build já pega erros de tipo.
 
 ## Estrutura de pastas
 
@@ -37,7 +38,7 @@ Comandos: `pnpm dev`, `pnpm build`, `pnpm lint`. Sempre rode `pnpm lint` e, para
   `(dashboard)/socios/_components/socio-form-dialog.tsx`). Se um componente passa a ser usado por
   mais de uma rota, promova-o para `src/components/`.
 - `src/components/ui/` — primitives do shadcn. Não edite à mão além do necessário; prefira
-  `pnpm dlx shadcn@latest add <componente>` (rode sempre a partir da raiz do projeto — se o shell
+  `bunx --bun shadcn@latest add <componente>` (rode sempre a partir da raiz do projeto — se o shell
   estiver dentro de `node_modules` o CLI se comporta de forma estranha).
 - `src/components/` (fora de `ui/`) — componentes compartilhados entre 2+ rotas (ex.:
   `confirm-delete-dialog.tsx`, `currency-input.tsx`).
@@ -121,24 +122,23 @@ assumir que tudo que está previsto já aconteceu.
   próprio documento — um por linha, sem necessidade de override.
 - **`LancamentoFixo`** é diferente: é um template único reaproveitado todo mês, então o status
   não cabe no próprio doc. Fica em `statusMensalLancamentos` (`src/lib/firestore/status-mensal.ts`),
-  um doc por override manual, id determinístico `${lancamentoFixoId}_${mes}` (upsert via
-  `.set()`). **Sem doc = sem override**, não "não pago" — o status efetivo nesse caso é inferido
-  pela data (ver abaixo). A coleção inteira é buscada de uma vez (sem filtro de mês), igual
-  `transacoes`/`notasFiscais` — o volume é baixo (só overrides manuais, não uma ocorrência por
-  mês).
-- `src/lib/saldo.ts` centraliza a lógica: `statusEfetivoLancamentoFixo()` decide o status quando
-  não há override — **vencimento no passado é presumido pago, hoje/futuro fica pendente**. Isso
-  evita ter que marcar retroativamente todo o histórico só pra saldo bater; só é preciso mexer no
-  Controle do mês quando a realidade diverge do padrão (algo não foi pago apesar de já ter
-  vencido, ou foi pago adiantado).
-- `configuracoes/geral` (`src/lib/firestore/configuracao.ts`) guarda `saldoInicialCentavos` +
-  `saldoInicialData` — o saldo real da conta numa data de referência, editável a qualquer momento
+  um doc por confirmação manual, id determinístico `${lancamentoFixoId}_${mes}` (upsert via
+  `.set()`). **Sem confirmação explícita = pendente**, mesmo depois do vencimento. A confirmação
+  guarda `dataPagamento` e, quando necessário, `valorRealCentavos`.
+- `src/lib/saldo.ts` centraliza o saldo real e só inclui transações, notas e ocorrências fixas
+  confirmadas. O vencimento sozinho nunca movimenta o saldo bancário.
+- `configuracoes/geral` (`src/lib/firestore/configuracao.ts`) guarda `saldoInicialCentavos`,
+  `saldoInicialData` e `margemSegurancaCentavos` — o saldo real da conta numa data de referência
+  e a margem preservada antes de uma retirada, editáveis a qualquer momento
   pelo ícone de lápis no card "Saldo atual em conta". `calcularSaldoAtual()` soma a esse valor
   tudo que foi confirmado (pago/recebido, efetivo ou por override) entre essa data e hoje.
   `calcularSaldoBaseParaMes()` faz o mesmo até o fim do mês anterior ao filtrado — é o que
   `FluxoMesCard` usa como ponto de partida do gráfico, em vez de sempre começar do zero.
 - Sem `configuracoes/geral` cadastrado, saldo atual mostra R$ 0,00 e o card avisa "Defina o saldo
   inicial" — é o usuário quem precisa informar o valor real, não dá pra inferir.
+- `src/lib/projecao-caixa.ts` calcula entradas/saídas pendentes, saldo no fim do mês, reserva
+  mínima para atravessar o início do mês seguinte e retirada potencial. Esta última é apenas
+  disponibilidade de caixa; não substitui a apuração contábil do lucro distribuível.
 
 ## Filtro por período
 
@@ -149,8 +149,11 @@ por período (ver `notas-fiscais` e `transacoes` como referência).
 
 ## Dinheiro
 
-Valores monetários são sempre `valorCentavos: number` (inteiro, em centavos) no Firestore e nos
-tipos — nunca float em reais. Formatar para exibição com `formatCentavos()` de `src/lib/format.ts`.
+Valores monetários são sempre inteiros em centavos no Firestore e nos tipos — nunca float em
+reais. `LancamentoFixo.valorCentavos` é o valor bruto; `valorCaixaCentavos` é opcional e representa
+o impacto bancário previsto quando for diferente (ex.: pró-labore líquido). A ocorrência mensal
+pode sobrescrever com `StatusMensalLancamento.valorRealCentavos`. Formatar para exibição com
+`formatCentavos()` de `src/lib/format.ts`.
 Inputs de valor guardam uma string separada só para exibição (`"1.234,56"`) e convertem para
 centavos a cada mudança (ver `lancamento-form-dialog.tsx`).
 

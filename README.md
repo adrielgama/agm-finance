@@ -42,8 +42,8 @@ Actions (`"use server"`) em `src/lib/firestore/*.ts`, chamadas pelos hooks do Ta
 ## Rodando localmente
 
 ```bash
-pnpm install
-pnpm dev
+bun install
+bun run dev
 ```
 
 Abra [http://localhost:3000](http://localhost:3000).
@@ -66,12 +66,14 @@ Copie `.env.example` para `.env` e preencha:
 ### Scripts
 
 ```bash
-pnpm dev     # servidor de desenvolvimento (Turbopack)
-pnpm build   # build de produção — também valida tipos
-pnpm lint    # ESLint
+bun run dev     # servidor de desenvolvimento (Turbopack)
+bun run build   # build de produção — também valida tipos
+bun run lint    # ESLint
+bun test        # testes dos cálculos financeiros
 ```
 
-Rode `pnpm lint` sempre, e `pnpm build` para mudanças maiores, antes de considerar algo pronto.
+Rode `bun test` e `bun run lint` sempre, e `bun run build` para mudanças maiores, antes de
+considerar algo pronto.
 
 ## Autenticação
 
@@ -102,7 +104,7 @@ Admin secundária nomeada `"better-auth"` — separada da app `"admin"` usada pe
 | `notasFiscais`            | Receita real por cliente/competência — emissão e recebimento (previsto/real) separados.                              |
 | `transacoes`              | Movimentação pontual, com data exata e flag `pago`.                                                                  |
 | `statusMensalLancamentos` | Override de pago/recebido de um `LancamentoFixo` num mês específico (o template é único, o status é por ocorrência). |
-| `configuracoes`           | Doc único `geral` com o saldo real da conta numa data de referência.                                                 |
+| `configuracoes`           | Doc único `geral` com saldo real numa data de referência e margem de segurança.                                      |
 
 Regras do Firestore são `allow read, write: if false` (deny-all) de propósito — toda autorização
 acontece em `verifySession()` dentro de cada Server Action, não nas rules.
@@ -113,22 +115,26 @@ O app distingue **projeção** (o que está previsto acontecer) de **confirmado*
 aconteceu de fato):
 
 - `Transacao.pago` e `NotaFiscal.dataRecebimentoReal` guardam o status direto no documento.
-- `LancamentoFixo`, por ser um template reaproveitado todo mês, usa overrides em
-  `statusMensalLancamentos`. Sem override, o status é inferido pela data — vencimento no passado
-  é presumido pago, hoje/futuro fica pendente — pra não exigir marcar retroativamente todo o
-  histórico.
+- `LancamentoFixo`, por ser um template reaproveitado todo mês, usa confirmações em
+  `statusMensalLancamentos`. Sem confirmação explícita, permanece pendente mesmo depois do
+  vencimento. A confirmação guarda data e valor efetivos no banco.
 - O saldo real da conta (`configuracoes/geral`) é a base; o "Saldo atual em conta" soma a esse
   valor tudo que foi confirmado desde a data de referência. O gráfico "Fluxo do mês" parte desse
   mesmo saldo acumulado em vez de sempre reiniciar em zero a cada mês.
+- O topo de `/mes` resume saldo atual, entradas e saídas pendentes, saldo projetado, reserva para
+  atravessar o início do mês seguinte e retirada potencial preservando uma margem configurável.
+- “Retirada potencial” é disponibilidade de caixa, não uma apuração contábil automática do lucro
+  distribuível.
 
 Toda essa lógica está centralizada em `src/lib/saldo.ts`.
 
 ### Dinheiro
 
-Valores monetários são sempre `valorCentavos: number` (inteiro, em centavos) — nunca float em
-reais. Formatação pra exibição via `formatCentavos()` (`src/lib/format.ts`). Inputs de valor usam
-`CurrencyInput`, que mascara como input de banco (dígitos preenchem os centavos da direita pra
-esquerda).
+Valores monetários são sempre inteiros em centavos — nunca float em reais. `LancamentoFixo`
+mantém `valorCentavos` como valor bruto e pode ter `valorCaixaCentavos` quando o impacto bancário
+é diferente (por exemplo, pró-labore líquido após descontos). A confirmação mensal também pode
+guardar `valorRealCentavos`. Formatação pra exibição via `formatCentavos()`
+(`src/lib/format.ts`). Inputs usam `CurrencyInput`.
 
 ## Estrutura de pastas
 
@@ -154,6 +160,7 @@ src/
 │  ├─ auth/               # instância do better-auth, client, DAL, allow-list
 │  ├─ saldo.ts            # status efetivo + cálculo de saldo real
 │  ├─ fluxo-mensal.ts     # eventos e saldo diário do gráfico "Fluxo do mês"
+│  ├─ projecao-caixa.ts   # reserva, saldo projetado e retirada potencial
 │  └─ fator-r.ts          # cálculo de enquadramento tributário
 ├─ types/*.ts             # tipos de domínio + input types
 └─ proxy.ts                # Next 16 — equivalente ao antigo middleware.ts

@@ -7,6 +7,7 @@
 export type ConfiguracaoGeral = {
   saldoInicialCentavos: number;
   saldoInicialData: Date;
+  margemSegurancaCentavos: number;
   updatedAt: Date;
 };
 

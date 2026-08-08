@@ -44,6 +44,7 @@ const emptyForm: LancamentoFixoInput = {
   nome: "",
   categoria: "outros",
   valorCentavos: 0,
+  valorCaixaCentavos: null,
   diaVencimento: 5,
   responsavelId: null,
   ativo: true,
@@ -76,6 +77,7 @@ export function LancamentoFormDialog({
             nome: lancamento.nome,
             categoria: lancamento.categoria,
             valorCentavos: lancamento.valorCentavos,
+            valorCaixaCentavos: lancamento.valorCaixaCentavos,
             diaVencimento: lancamento.diaVencimento,
             responsavelId: lancamento.responsavelId,
             ativo: lancamento.ativo,
@@ -197,6 +199,41 @@ export function LancamentoFormDialog({
                 />
               </div>
             </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
+              <div className="flex flex-col gap-0.5">
+                <Label htmlFor="valor-caixa-diferente">
+                  Impacto no caixa diferente do valor bruto
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  Use para pró-labore líquido ou outro valor com descontos.
+                </span>
+              </div>
+              <Checkbox
+                id="valor-caixa-diferente"
+                checked={form.valorCaixaCentavos !== null}
+                onCheckedChange={(checked) =>
+                  setForm({
+                    ...form,
+                    valorCaixaCentavos:
+                      checked === true ? form.valorCentavos : null,
+                  })
+                }
+              />
+            </div>
+
+            {form.valorCaixaCentavos !== null && (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="valor-caixa">Impacto previsto no caixa (R$)</Label>
+                <CurrencyInput
+                  id="valor-caixa"
+                  defaultValueCentavos={form.valorCaixaCentavos}
+                  onValueChange={(valorCaixaCentavos) =>
+                    setForm((f) => ({ ...f, valorCaixaCentavos }))
+                  }
+                />
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <Label htmlFor="responsavel">Responsável (opcional)</Label>

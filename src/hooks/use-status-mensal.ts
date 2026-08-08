@@ -18,15 +18,13 @@ export function useSetStatusMensalLancamento() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      lancamentoFixoId,
-      mes,
-      pago,
-    }: {
+    mutationFn: (input: {
       lancamentoFixoId: string;
       mes: string;
       pago: boolean;
-    }) => setStatusMensalLancamento(lancamentoFixoId, mes, pago),
+      dataPagamento?: Date | null;
+      valorRealCentavos?: number | null;
+    }) => setStatusMensalLancamento(input),
     onSuccess: () => {
       toast.success("Status atualizado.");
       queryClient.invalidateQueries({ queryKey: statusMensalQueryKey });

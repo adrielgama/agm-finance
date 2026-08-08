@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -59,9 +60,13 @@ export function Topbar({ user }: { user: SessionUser }) {
         <SheetContent side="left" className="w-64 bg-sidebar p-0">
           <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           <div className="flex h-16 items-center gap-2 px-6">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-              A
-            </div>
+            <Image
+              src="/brand/agm-icon.png"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 rounded-lg"
+            />
             <span className="text-sm font-semibold text-sidebar-foreground">
               AGM Finance
             </span>
