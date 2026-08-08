@@ -45,7 +45,7 @@ export function Topbar({ user }: { user: SessionUser }) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-sm lg:px-8">
+    <header className="app-topbar sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border px-4 backdrop-blur-xl lg:px-8">
       <Button
         variant="ghost"
         size="icon"
@@ -65,7 +65,7 @@ export function Topbar({ user }: { user: SessionUser }) {
               alt=""
               width={32}
               height={32}
-              className="size-8 rounded-lg"
+              className="size-8 rounded-lg shadow-lg shadow-black/30 ring-1 ring-white/10"
             />
             <span className="text-sm font-semibold text-sidebar-foreground">
               AGM Finance
@@ -98,7 +98,7 @@ export function Topbar({ user }: { user: SessionUser }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full outline-none ring-primary focus-visible:ring-2">
-              <Avatar className="size-9">
+              <Avatar className="size-9 shadow-lg shadow-black/25 ring-1 ring-primary/20">
                 <AvatarImage src={user.picture ?? undefined} alt={user.name} />
                 <AvatarFallback className="bg-primary/15 text-primary">
                   {initials(user.name)}

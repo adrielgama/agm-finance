@@ -20,9 +20,9 @@ export function NavList({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+              "relative flex items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all hover:border-white/5 hover:bg-sidebar-accent hover:text-sidebar-foreground",
               isActive &&
-                "bg-primary/15 text-primary hover:bg-primary/15 hover:text-primary"
+                "border-primary/15 bg-primary/12 text-primary shadow-[inset_0_1px_0_color-mix(in_oklab,var(--primary)_8%,transparent),0_12px_28px_-22px_color-mix(in_oklab,var(--primary)_70%,transparent)] hover:border-primary/20 hover:bg-primary/15 hover:text-primary",
             )}
           >
             <HugeiconsIcon icon={item.icon} className="size-5 shrink-0" />

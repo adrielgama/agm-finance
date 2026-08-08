@@ -43,6 +43,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -60,42 +62,47 @@
 */
 :root,
 .dark {
-  --background: #0a0e1e;
-  --foreground: #e7eaf6;
-  --card: #10152b;
-  --card-foreground: #e7eaf6;
-  --popover: #10152b;
-  --popover-foreground: #e7eaf6;
-  --primary: #3d63f5;
-  --primary-foreground: #f5f7ff;
-  --secondary: #1a2040;
-  --secondary-foreground: #e7eaf6;
-  --muted: #161b36;
-  --muted-foreground: #8891b3;
-  --accent: #1e2648;
-  --accent-foreground: #e7eaf6;
+  --background: #050711;
+  --foreground: #eef0fa;
+  --card: #0d1122;
+  --card-foreground: #eef0fa;
+  --popover: #10152a;
+  --popover-foreground: #eef0fa;
+  --primary: #8795de;
+  --primary-foreground: #080b18;
+  --secondary: #171c35;
+  --secondary-foreground: #eef0fa;
+  --muted: #12172b;
+  --muted-foreground: #929abc;
+  --accent: #202846;
+  --accent-foreground: #f4f5fb;
   --destructive: #f2545b;
-  --border: color-mix(in oklab, white 8%, transparent);
-  --input: #1a2040;
-  --ring: #3d63f5;
+  --border: color-mix(in oklab, white 9%, transparent);
+  --input: #171c35;
+  --ring: #8795de;
+  --brand: #2b335b;
+  --brand-foreground: #f7f8ff;
+  --brand-soft: #46538d;
+  --surface-border: color-mix(in oklab, white 10%, transparent);
+  --surface-glow: color-mix(in oklab, var(--brand-soft) 24%, transparent);
   --positive: #22c55e;
   --positive-foreground: #f5f7ff;
   --negative: #f2545b;
   --negative-foreground: #f5f7ff;
-  --chart-1: #3d63f5;
+  --chart-1: #8795de;
   --chart-2: #22c55e;
   --chart-3: #f59e0b;
   --chart-4: #8b5cf6;
   --chart-5: #f2545b;
   --radius: 0.75rem;
-  --sidebar: #0b0f22;
-  --sidebar-foreground: #c7cee8;
-  --sidebar-primary: #3d63f5;
-  --sidebar-primary-foreground: #f5f7ff;
-  --sidebar-accent: #161b36;
-  --sidebar-accent-foreground: #e7eaf6;
-  --sidebar-border: color-mix(in oklab, white 6%, transparent);
-  --sidebar-ring: #3d63f5;
+  --sidebar: #080a16;
+  --sidebar-foreground: #cbd0e8;
+  --sidebar-primary: #8795de;
+  --sidebar-primary-foreground: #080b18;
+  --sidebar-accent: #171c35;
+  --sidebar-accent-foreground: #eef0fa;
+  --sidebar-border: color-mix(in oklab, white 7%, transparent);
+  --sidebar-ring: #8795de;
 }
 
 @layer base {
@@ -104,12 +111,113 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(
+        circle at 78% -10%,
+        color-mix(in oklab, var(--brand) 58%, transparent),
+        transparent 34rem
+      ),
+      radial-gradient(
+        circle at 12% 55%,
+        color-mix(in oklab, var(--brand) 18%, transparent),
+        transparent 30rem
+      );
+    background-attachment: fixed;
   }
-  button:not(:disabled), [role="button"]:not(:disabled) {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {
     @apply font-sans;
     color-scheme: dark;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+}
+
+@layer components {
+  .surface-card {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--surface-border);
+    background-color: var(--card);
+    background-image:
+      radial-gradient(
+        85% 110% at 100% 0%,
+        var(--surface-glow),
+        transparent 58%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--card) 96%, white 4%),
+        var(--card)
+      );
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 4%, transparent),
+      0 26px 60px -42px rgb(0 0 0 / 95%),
+      0 12px 34px -28px color-mix(in oklab, var(--brand-soft) 55%, transparent);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
+  }
+
+  .surface-card:hover {
+    border-color: color-mix(in oklab, var(--primary) 19%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 5%, transparent),
+      0 30px 70px -44px rgb(0 0 0 / 100%),
+      0 16px 42px -30px color-mix(in oklab, var(--brand-soft) 72%, transparent);
+  }
+
+  .surface-card-brand {
+    border-color: color-mix(in oklab, var(--primary) 24%, transparent);
+    background-image:
+      radial-gradient(
+        80% 150% at 86% 18%,
+        color-mix(in oklab, var(--primary) 18%, transparent),
+        transparent 62%
+      ),
+      radial-gradient(
+        70% 130% at 0% 100%,
+        color-mix(in oklab, var(--brand) 48%, transparent),
+        transparent 70%
+      ),
+      linear-gradient(135deg, #11172d, #0c1020);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 6%, transparent),
+      0 30px 70px -40px rgb(0 0 0 / 100%),
+      0 18px 48px -30px color-mix(in oklab, var(--primary) 52%, transparent);
+  }
+
+  .app-sidebar {
+    background-image:
+      radial-gradient(
+        circle at 0% 0%,
+        color-mix(in oklab, var(--brand) 52%, transparent),
+        transparent 18rem
+      ),
+      linear-gradient(180deg, #0a0d1b, var(--sidebar));
+    box-shadow: 18px 0 55px -42px rgb(0 0 0 / 100%);
+  }
+
+  .app-topbar {
+    background: color-mix(in oklab, var(--background) 78%, transparent);
+    box-shadow: 0 12px 35px -30px rgb(0 0 0 / 100%);
+  }
+
+  [data-slot="button"][data-variant="default"] {
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 16%, transparent),
+      0 10px 26px -16px color-mix(in oklab, var(--primary) 75%, transparent);
+  }
+
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"] {
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 5%, transparent),
+      0 30px 90px -24px rgb(0 0 0 / 90%);
   }
 }

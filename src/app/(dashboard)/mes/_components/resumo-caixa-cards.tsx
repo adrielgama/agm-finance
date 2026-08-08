@@ -16,11 +16,26 @@ const toneClasses = {
   primary: "text-primary",
 };
 
+const toneAccentClasses = {
+  positive: "from-transparent via-positive/55 to-transparent",
+  negative: "from-transparent via-negative/55 to-transparent",
+  primary: "from-transparent via-primary/55 to-transparent",
+};
+
 export function ResumoCaixaCards({ itens }: { itens: ResumoItem[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {itens.map((item) => (
-        <Card key={item.label} className="gap-2 py-5">
+        <Card key={item.label} className="gap-2 py-5 hover:-translate-y-0.5">
+          {item.tone && (
+            <span
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r",
+                toneAccentClasses[item.tone],
+              )}
+            />
+          )}
           <CardContent className="flex flex-col gap-1 px-5">
             <span className="text-sm text-muted-foreground">{item.label}</span>
             <span
@@ -53,7 +68,7 @@ export function AdiantamentoLucroCard({
   horizonte: string;
 }) {
   return (
-    <Card className="border-primary/20 bg-primary/[0.04] py-0 ring-primary/20">
+    <Card variant="brand" className="py-0">
       <CardContent className="grid gap-5 px-5 py-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:px-6">
         <div className="flex min-w-0 gap-4">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

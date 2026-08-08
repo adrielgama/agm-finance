@@ -11,6 +11,12 @@ const toneClasses: Record<StatCardTone, string> = {
   neutral: "bg-primary/10 text-primary",
 };
 
+const toneAccentClasses: Record<StatCardTone, string> = {
+  positive: "from-transparent via-positive/55 to-transparent",
+  negative: "from-transparent via-negative/55 to-transparent",
+  neutral: "from-transparent via-primary/55 to-transparent",
+};
+
 export function StatCard({
   label,
   value,
@@ -25,7 +31,14 @@ export function StatCard({
   hint?: string;
 }) {
   return (
-    <Card className="gap-3 py-5">
+    <Card className="gap-3 py-5 hover:-translate-y-0.5">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r",
+          toneAccentClasses[tone],
+        )}
+      />
       <CardContent className="flex items-start justify-between px-5">
         <div className="flex flex-col gap-1">
           <span className="text-sm text-muted-foreground">{label}</span>
@@ -37,7 +50,7 @@ export function StatCard({
         <div
           className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-xl",
-            toneClasses[tone]
+            toneClasses[tone],
           )}
         >
           <HugeiconsIcon icon={icon} className="size-5" />

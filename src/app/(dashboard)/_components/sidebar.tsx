@@ -3,14 +3,14 @@ import { NavList } from "./nav-list";
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+    <aside className="app-sidebar hidden w-64 shrink-0 flex-col border-r border-sidebar-border lg:flex">
       <div className="flex h-16 items-center gap-2 px-6">
         <Image
           src="/brand/agm-icon.png"
           alt=""
           width={32}
           height={32}
-          className="size-8 rounded-lg"
+          className="size-8 rounded-lg shadow-lg shadow-black/30 ring-1 ring-white/10"
           priority
         />
         <span className="text-sm font-semibold tracking-wide text-sidebar-foreground">

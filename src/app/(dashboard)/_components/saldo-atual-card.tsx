@@ -19,7 +19,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrap } from "@/components/tooltip-wrap";
-import { useConfiguracao, useUpdateSaldoInicial } from "@/hooks/use-configuracao";
+import {
+  useConfiguracao,
+  useUpdateSaldoInicial,
+} from "@/hooks/use-configuracao";
 import { formatCentavos, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +37,8 @@ export function SaldoAtualCard({
   const [open, setOpen] = useState(false);
   const [valorCentavos, setValorCentavos] = useState(0);
   const [data, setData] = useState<Date | undefined>(new Date());
-  const [margemSegurancaCentavos, setMargemSegurancaCentavos] = useState(100_000);
+  const [margemSegurancaCentavos, setMargemSegurancaCentavos] =
+    useState(100_000);
   const updateSaldoInicial = useUpdateSaldoInicial();
 
   function handleOpenChange(nextOpen: boolean) {
@@ -42,7 +46,7 @@ export function SaldoAtualCard({
       setValorCentavos(configuracao?.saldoInicialCentavos ?? 0);
       setData(configuracao?.saldoInicialData ?? new Date());
       setMargemSegurancaCentavos(
-        configuracao?.margemSegurancaCentavos ?? 100_000
+        configuracao?.margemSegurancaCentavos ?? 100_000,
       );
     }
     setOpen(nextOpen);
@@ -62,7 +66,14 @@ export function SaldoAtualCard({
   }
 
   return (
-    <Card className="gap-3 py-5">
+    <Card className="gap-3 py-5 hover:-translate-y-0.5">
+      <span
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent to-transparent",
+          saldoAtualCentavos >= 0 ? "via-positive/55" : "via-negative/55",
+        )}
+      />
       <CardContent className="flex items-start justify-between px-5">
         <div className="flex flex-col gap-1">
           <span className="text-sm text-muted-foreground">
@@ -95,9 +106,9 @@ export function SaldoAtualCard({
                 <DialogHeader>
                   <DialogTitle>Saldo inicial</DialogTitle>
                   <DialogDescription>
-                    Saldo real da conta numa data de referência. O saldo atual
-                    é calculado a partir daqui, somando tudo que foi marcado
-                    como pago/recebido desde então (ver Controle do mês).
+                    Saldo real da conta numa data de referência. O saldo atual é
+                    calculado a partir daqui, somando tudo que foi marcado como
+                    pago/recebido desde então (ver Controle do mês).
                   </DialogDescription>
                 </DialogHeader>
 
@@ -147,7 +158,7 @@ export function SaldoAtualCard({
               "flex size-10 shrink-0 items-center justify-center rounded-xl",
               saldoAtualCentavos >= 0
                 ? "bg-positive/10 text-positive"
-                : "bg-negative/10 text-negative"
+                : "bg-negative/10 text-negative",
             )}
           >
             <HugeiconsIcon icon={BankIcon} className="size-5" />
