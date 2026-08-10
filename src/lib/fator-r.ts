@@ -1,81 +1,6 @@
-import type { NotaFiscal } from "@/types/nota-fiscal";
+import type { FatorRCompetencia } from "@/types/fator-r";
 
 export const FATOR_R_LIMIAR = 0.28;
-
-/**
- * Receita anual sugerida a partir do histórico real de notas fiscais: soma
- * os últimos até 12 meses de competência com nota emitida e anualiza pela
- * média mensal. Não tenta prever mudanças futuras (ex.: perda de cliente) —
- * ajuste manualmente o campo no simulador se souber que a receita vai mudar.
- */
-export function calcularReceitaAnualPorNotasFiscais(notasFiscais: NotaFiscal[]) {
-  const totalPorMes = new Map<string, number>();
-
-  for (const notaFiscal of notasFiscais) {
-    totalPorMes.set(
-      notaFiscal.mesReferencia,
-      (totalPorMes.get(notaFiscal.mesReferencia) ?? 0) + notaFiscal.valorCentavos
-    );
-  }
-
-  const mesesConsiderados = [...totalPorMes.keys()].sort().slice(-12);
-
-  if (mesesConsiderados.length === 0) {
-    return { receitaAnualCentavos: 0, mesesConsiderados: 0 };
-  }
-
-  const totalCentavos = mesesConsiderados.reduce(
-    (soma, mes) => soma + (totalPorMes.get(mes) ?? 0),
-    0
-  );
-  const mediaMensalCentavos = totalCentavos / mesesConsiderados.length;
-
-  return {
-    receitaAnualCentavos: Math.round(mediaMensalCentavos * 12),
-    mesesConsiderados: mesesConsiderados.length,
-  };
-}
-
-export function calcularFolhaAnualCentavos({
-  proLaboreMensalCentavos,
-  outrosSalariosMensalCentavos,
-  encargosPercent,
-}: {
-  proLaboreMensalCentavos: number;
-  outrosSalariosMensalCentavos: number;
-  encargosPercent: number;
-}) {
-  const baseAnual = (proLaboreMensalCentavos + outrosSalariosMensalCentavos) * 12;
-  return Math.round(baseAnual * (1 + encargosPercent / 100));
-}
-
-export function calcularFatorR({
-  folhaAnualCentavos,
-  receitaAnualCentavos,
-}: {
-  folhaAnualCentavos: number;
-  receitaAnualCentavos: number;
-}) {
-  if (receitaAnualCentavos <= 0) return 0;
-  return folhaAnualCentavos / receitaAnualCentavos;
-}
-
-export function calcularProLaboreMinimoMensal({
-  receitaAnualCentavos,
-  outrosSalariosMensalCentavos,
-  encargosPercent,
-  metaFatorR = FATOR_R_LIMIAR,
-}: {
-  receitaAnualCentavos: number;
-  outrosSalariosMensalCentavos: number;
-  encargosPercent: number;
-  metaFatorR?: number;
-}) {
-  const fatorEncargos = 1 + encargosPercent / 100;
-  const necessarioMensalTotal =
-    (metaFatorR * receitaAnualCentavos) / (12 * fatorEncargos);
-  return Math.max(0, Math.round(necessarioMensalTotal - outrosSalariosMensalCentavos));
-}
 
 export type Enquadramento = {
   anexo: "III" | "V";
@@ -86,4 +11,93 @@ export function calcularEnquadramento(fatorR: number): Enquadramento {
   return fatorR >= FATOR_R_LIMIAR
     ? { anexo: "III", aliquotaInicial: 6 }
     : { anexo: "V", aliquotaInicial: 15.5 };
+}
+export function totalFolhaCompetencia(
+  competencia: Pick<
+    FatorRCompetencia,
+    "proLaboreCentavos" | "cppCentavos" | "outrosFolhaCentavos"
+  >,
+) {
+  return (
+    competencia.proLaboreCentavos +
+    competencia.cppCentavos +
+    competencia.outrosFolhaCentavos
+  );
+}
+
+export function calcularResumoFatorR(competencias: FatorRCompetencia[]) {
+  const janela = [...competencias]
+    .sort((a, b) => a.competencia.localeCompare(b.competencia))
+    .slice(-12);
+  const receitaCentavos = janela.reduce(
+    (total, item) => total + item.receitaCentavos,
+    0,
+  );
+  const folhaCentavos = janela.reduce(
+    (total, item) => total + totalFolhaCompetencia(item),
+    0,
+  );
+  const metaFolhaCentavos = Math.ceil(receitaCentavos * FATOR_R_LIMIAR);
+  const fatorR = receitaCentavos > 0 ? folhaCentavos / receitaCentavos : 0;
+
+  return {
+    janela,
+    receitaCentavos,
+    folhaCentavos,
+    metaFolhaCentavos,
+    margemCentavos: folhaCentavos - metaFolhaCentavos,
+    fatorR,
+    enquadramento: calcularEnquadramento(fatorR),
+  };
+}
+
+export function calcularProLaboreMinimoDaUltimaCompetencia(
+  competencias: FatorRCompetencia[],
+) {
+  const resumo = calcularResumoFatorR(competencias);
+  const ultima = resumo.janela.at(-1);
+  if (!ultima) return 0;
+
+  const folhaSemProLaboreAtual =
+    resumo.folhaCentavos - ultima.proLaboreCentavos;
+  return Math.max(0, resumo.metaFolhaCentavos - folhaSemProLaboreAtual);
+}
+
+export function projetarProximaCompetencia({
+  competencias,
+  competencia,
+  receitaCentavos,
+  proLaboreCentavos,
+  cppCentavos = 0,
+  outrosFolhaCentavos = 0,
+}: {
+  competencias: FatorRCompetencia[];
+  competencia: string;
+  receitaCentavos: number;
+  proLaboreCentavos: number;
+  cppCentavos?: number;
+  outrosFolhaCentavos?: number;
+}) {
+  const projecao: FatorRCompetencia = {
+    id: competencia,
+    competencia,
+    receitaCentavos,
+    proLaboreCentavos,
+    cppCentavos,
+    outrosFolhaCentavos,
+    confirmado: false,
+    origem: "manual",
+    proLaboreMinimoInformadoCentavos: null,
+    observacao: null,
+    updatedAt: new Date(0),
+  };
+  const janelaProjetada = [...competencias, projecao]
+    .sort((a, b) => a.competencia.localeCompare(b.competencia))
+    .slice(-12);
+
+  return {
+    resumo: calcularResumoFatorR(janelaProjetada),
+    proLaboreMinimoCentavos:
+      calcularProLaboreMinimoDaUltimaCompetencia(janelaProjetada),
+  };
 }
