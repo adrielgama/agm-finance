@@ -93,8 +93,7 @@ function EditarCompetenciaDialog({ item }: { item: FatorRCompetencia }) {
       outrosFolhaCentavos,
       confirmado,
       origem: confirmado ? "contabilidade" : "manual",
-      proLaboreMinimoInformadoCentavos:
-        item.proLaboreMinimoInformadoCentavos,
+      proLaboreMinimoInformadoCentavos: item.proLaboreMinimoInformadoCentavos,
       observacao: observacao.trim() || null,
     };
     await mutation.mutateAsync(input);
@@ -145,7 +144,9 @@ function EditarCompetenciaDialog({ item }: { item: FatorRCompetencia }) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor={`outros-${item.id}`}>Outros valores da folha</Label>
+              <Label htmlFor={`outros-${item.id}`}>
+                Outros valores da folha
+              </Label>
               <CurrencyInput
                 id={`outros-${item.id}`}
                 defaultValueCentavos={outrosFolhaCentavos}
@@ -306,7 +307,7 @@ export function FatorRDashboard({
               {formatCentavos(minimoContabilidade)}
             </p>
           </div>
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] p-3">
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/6 p-3">
             <p className="text-xs text-emerald-300">Folga no pró-labore</p>
             <p className="mt-1 text-lg font-semibold text-emerald-300">
               {formatCentavos(
@@ -329,8 +330,8 @@ export function FatorRDashboard({
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
-          <Table>
-            <TableHeader>
+          <Table containerClassName="max-h-[22rem] [scrollbar-gutter:stable]">
+            <TableHeader className="sticky top-0 z-20 bg-card shadow-[0_1px_0_var(--border)]">
               <TableRow>
                 <TableHead className="pl-4">Competência</TableHead>
                 <TableHead className="text-right">Faturamento</TableHead>
@@ -379,7 +380,7 @@ export function FatorRDashboard({
                 </TableRow>
               ))}
             </TableBody>
-            <TableFooter>
+            <TableFooter className="sticky bottom-0 z-20 bg-card shadow-[0_-1px_0_var(--border)]">
               <TableRow>
                 <TableCell className="pl-4">Total</TableCell>
                 <TableCell className="text-right">
@@ -425,8 +426,8 @@ export function FatorRDashboard({
           <div
             className={`rounded-lg border p-3 ${
               projecao.resumo.enquadramento.anexo === "III"
-                ? "border-emerald-500/20 bg-emerald-500/[0.06]"
-                : "border-amber-500/20 bg-amber-500/[0.06]"
+                ? "border-emerald-500/20 bg-emerald-500/6"
+                : "border-amber-500/20 bg-amber-500/6"
             }`}
           >
             <p className="text-xs text-muted-foreground">Resultado estimado</p>
@@ -435,7 +436,7 @@ export function FatorRDashboard({
               {projecao.resumo.enquadramento.anexo}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Pró-labore mínimo estimado: {" "}
+              Pró-labore mínimo estimado:{" "}
               <strong className="text-foreground">
                 {formatCentavos(projecao.proLaboreMinimoCentavos)}
               </strong>

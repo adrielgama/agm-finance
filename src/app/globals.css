@@ -108,6 +108,30 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-color:
+      color-mix(in oklab, var(--primary) 68%, var(--brand))
+      color-mix(in oklab, var(--background) 78%, var(--card));
+    scrollbar-width: thin;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--background) 78%, var(--card));
+  }
+  *::-webkit-scrollbar-thumb {
+    min-height: 36px;
+    border: 2px solid color-mix(in oklab, var(--background) 78%, var(--card));
+    border-radius: 999px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--primary) 72%, var(--brand)),
+      var(--brand)
+    );
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
   }
   body {
     @apply bg-background text-foreground;
